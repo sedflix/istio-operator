@@ -50,3 +50,9 @@ leaderElection:
   enabled: true
   namespace: "istio-system"
   nameOverride: ""
+
+webhook:
+  enabled: true
+  certs:
+    generate: true
+    secretName: "istio-operator-webhook-cert"

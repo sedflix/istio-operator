@@ -19,6 +19,7 @@ package crds
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"strings"
@@ -151,7 +152,7 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 			return emperror.Wrap(err, "could not set resource revision")
 		}
 		log := log.WithValues("kind", crd.Spec.Names.Kind)
-		current, err := crdClient.Get(crd.Name, metav1.GetOptions{})
+		current, err := crdClient.Get(context.Background(), crd.Name, metav1.GetOptions{})
 		if err != nil && !apierrors.IsNotFound(err) {
 			return emperror.WrapWith(err, "getting CRD failed", "kind", crd.Spec.Names.Kind)
 		}
@@ -159,7 +160,7 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(crd); err != nil {
 				log.Error(err, "Failed to set last applied annotation", "crd", crd)
 			}
-			if _, err := crdClient.Create(crd); err != nil {
+			if _, err := crdClient.Create(context.Background(), crd, metav1.CreateOptions{}); err != nil {
 				return emperror.WrapWith(err, "creating CRD failed", "kind", crd.Spec.Names.Kind)
 			}
 			log.Info("CRD created")
@@ -191,14 +192,14 @@ func (r *CRDReconciler) Reconcile(config *istiov1beta1.Istio, log logr.Logger) e
 				log.Error(err, "Failed to set last applied annotation", "crd", crd)
 			}
 
-			if _, err := crdClient.Update(crd); err != nil {
+			if _, err := crdClient.Update(context.Background(), crd, metav1.UpdateOptions{}); err != nil {
 				if apierrors.IsConflict(err) || apierrors.IsInvalid(err) {
-					err := crdClient.Delete(crd.Name, &metav1.DeleteOptions{})
+					err := crdClient.Delete(context.Background(), crd.Name, metav1.DeleteOptions{})
 					if err != nil {
 						return emperror.WrapWith(err, "could not delete CRD", "kind", crd.Spec.Names.Kind)
 					}
 					crd.ResourceVersion = ""
-					if _, err := crdClient.Create(crd); err != nil {
+					if _, err := crdClient.Create(context.Background(), crd, metav1.CreateOptions{}); err != nil {
 						log.Info("resource needs to be re-created")
 						return emperror.WrapWith(err, "creating CRD failed", "kind", crd.Spec.Names.Kind)
 					}

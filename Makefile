@@ -6,10 +6,11 @@ RELEASE_TYPE ?= p
 RELEASE_MSG ?= "operator release"
 
 REL_TAG = $(shell ./scripts/increment_version.sh -${RELEASE_TYPE} ${TAG})
+CRD_OPTIONS ?= "crd:trivialVersions=true,allowDangerousTypes=true,maxDescLen=0"
 
 GOLANGCI_VERSION = 1.23.8
 LICENSEI_VERSION = 0.1.0
-KUBEBUILDER_VERSION = 1.0.8
+KUBEBUILDER_VERSION = 2.3.1
 KUSTOMIZE_VERSION = 2.0.3
 ISTIO_VERSION = 1.7.0
 
@@ -89,7 +90,6 @@ deploy: install-kustomize
 manifests:
 	bin/controller-gen rbac --output-dir config/base/rbac
 	bin/controller-gen crd --output-dir config/base/crds
-	find config/base/crds -exec touch -t 201901010101 {} +
 
 # Run go fmt against code
 fmt:
@@ -104,8 +104,6 @@ download-deps:
 
 # Generate code
 generate: download-deps
-	find config/base/crds -exec touch -t 201901010101 {} +
-	find pkg/manifests/istio-crds -exec touch -t 201901010101 {} +
 	go generate ./pkg/... ./cmd/...
 	./hack/update-codegen.sh
 	go run static/generate.go

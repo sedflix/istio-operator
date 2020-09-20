@@ -93,6 +93,12 @@ spec:
           capabilities:
             drop:
             - ALL
+        {{- if .Values.webhook.enabled }}
+        volumeMounts:
+        - mountPath: /etc/webhook/certs
+          name: serving-cert
+          readOnly: true
+        {{- end }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
@@ -103,4 +109,10 @@ spec:
     {{- with .Values.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.webhook.enabled }}
+      volumes:
+      - name: serving-cert
+        secret:
+          secretName: {{ .Values.webhook.certs.secretName }}
     {{- end }}

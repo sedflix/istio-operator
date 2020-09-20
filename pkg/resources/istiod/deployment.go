@@ -69,7 +69,7 @@ func (r *Reconciler) containerEnvs() []apiv1.EnvVar {
 		},
 		{
 			Name:  "PILOT_TRACE_SAMPLING",
-			Value: fmt.Sprintf("%.2f", r.Config.Spec.Pilot.TraceSampling),
+			Value: fmt.Sprintf("%1.2f", r.Config.Spec.Pilot.TraceSampling),
 		},
 		{
 			Name:  "MESHNETWORKS_HASH",

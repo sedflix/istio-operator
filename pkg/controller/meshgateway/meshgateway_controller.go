@@ -44,6 +44,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 	"github.com/banzaicloud/istio-operator/pkg/k8sutil"
 	"github.com/banzaicloud/istio-operator/pkg/resources/gateways"
@@ -154,7 +155,7 @@ func (r *ReconcileMeshGateway) Reconcile(request reconcile.Request) (reconcile.R
 		}, errors.WithStack(err)
 	}
 
-	if !istio.Spec.Version.IsSupported() {
+	if !v1beta1.IstioVersion(istio.Spec.Version).IsSupported() {
 		return reconcile.Result{}, nil
 	}
 
@@ -227,7 +228,7 @@ func (r *ReconcileMeshGateway) getRelatedIstioCR(instance *istiov1beta1.MeshGate
 
 	// get the oldest otherwise for backward compatibility
 	var configs istiov1beta1.IstioList
-	err := r.Client.List(context.TODO(), &client.ListOptions{}, &configs)
+	err := r.Client.List(context.TODO(), &configs)
 	if err != nil {
 		return nil, emperror.Wrap(err, "could not list istio resources")
 	}
